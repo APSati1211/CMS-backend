@@ -46,3 +46,15 @@ class SiteContent(models.Model):
                     f"Allowed sections: {allowed_display}"
                 }
             )
+
+class Page(models.Model):
+    title = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
+    page_order = models.PositiveIntegerField(default=0, editable=False, db_index=True)
+
+    class Meta:
+        ordering = ['page_order']
+        verbose_name_plural = "Pages"
+
+    def __str__(self):
+        return self.title

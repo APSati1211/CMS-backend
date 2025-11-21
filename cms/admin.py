@@ -1,5 +1,15 @@
 from django.contrib import admin
-from .models import SiteContent
+from adminsortable2.admin import SortableAdminMixin
+from .models import SiteContent, Page
+
+@admin.register(Page)
+class PageAdmin(SortableAdminMixin, admin.ModelAdmin):
+    """
+    Admin configuration for the Page model with drag-and-drop ordering.
+    """
+    list_display = ('title', 'slug')
+    search_fields = ('title', 'slug')
+    ordering = ('page_order',)
 
 @admin.register(SiteContent)
 class SiteContentAdmin(admin.ModelAdmin):

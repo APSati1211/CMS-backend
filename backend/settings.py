@@ -24,7 +24,11 @@ ALLOWED_HOSTS = ["*"]  # allow all for development
 # INSTALLED APPS
 # -----------------------------
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    # django-admin-interface
+    'admin_interface',
+    'colorfield',
+
+    'django.contrib.admin',
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -34,6 +38,7 @@ INSTALLED_APPS = [
     # third-party
     "rest_framework",
     "corsheaders",
+    "adminsortable2",
 
     # custom apps
     "core",
@@ -41,6 +46,7 @@ INSTALLED_APPS = [
     "cms",
     "contact",
     "leads",
+    "theme",
 ]
 
 # -----------------------------
@@ -55,7 +61,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -66,7 +72,7 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -74,6 +80,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+
             ],
         },
     },

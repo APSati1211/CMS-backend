@@ -1,4 +1,5 @@
+# core/views.py
 from django.http import HttpResponse
 
 def home(request):
-    return HttpResponse("Hello from Core app!")
+    return HttpResponse("<h1>Welcome to the Homepage!</h1>")
