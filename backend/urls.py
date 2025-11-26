@@ -6,25 +6,56 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
-# Existing imports
-from cms.views import SiteContentViewSet, home_page_content, CaseStudyViewSet, ResourceViewSet, ServiceViewSet, PageViewSet 
-# --- CRITICAL FIX: Only 'chat_flow_handler' is imported ---
-from blog.views import BlogPostViewSet
+# --- IMPORTS ---
+from cms.views import (
+    SiteContentViewSet, 
+    home_page_content, 
+    CaseStudyViewSet, 
+    ResourceViewSet, 
+    ServiceViewSet, 
+    PageViewSet
+)
+from blog.views import BlogPostViewSet, BlogCategoryViewSet
 from leads.views import LeadViewSet, NewsletterSubscriberViewSet, chat_flow_handler
 from contact.views import ContactViewSet
 from careers.views import JobOpeningViewSet, JobApplicationViewSet
 
-# Router Setup
+# --- ROUTER REGISTRATION (Yeh Missing Tha) ---
 router = DefaultRouter()
-# ... (router registration remains the same)
+
+# CMS Endpoints
+router.register(r'sitecontent', SiteContentViewSet)
+router.register(r'case-studies', CaseStudyViewSet)
+router.register(r'resources', ResourceViewSet)
+router.register(r'services', ServiceViewSet)
+router.register(r'pages', PageViewSet)
+
+# Blog Endpoints
+router.register(r'blogs', BlogPostViewSet, basename='blog')
+router.register(r'blog-categories', BlogCategoryViewSet, basename='blog-category')
+
+# Lead & Contact Endpoints
+router.register(r'leads', LeadViewSet, basename='lead')
+router.register(r'subscribers', NewsletterSubscriberViewSet)
+router.register(r'contact', ContactViewSet, basename='contact')
+
+# Career Endpoints
+router.register(r'jobs', JobOpeningViewSet)
+router.register(r'apply', JobApplicationViewSet)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    
+    # Router URLs (Isme ab saare viewsets registered hain)
     path("api/", include(router.urls)),
-    # --- CRITICAL FIX: Path uses the new handler ---
+    
+    # Custom Handlers (Jo router me nahi aate)
     path("api/chatbot-flow/", chat_flow_handler),
-    path("api/", include("theme.urls")),
     path("api/home-page-content/", home_page_content),
+    
+    # Theme URLs
+    path("api/", include("theme.urls")),
 ]
 
 if settings.DEBUG:
