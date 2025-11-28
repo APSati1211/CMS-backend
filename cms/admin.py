@@ -1,21 +1,22 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from adminsortable2.admin import SortableAdminMixin
 from .models import (
     SiteContent, Page,
     HomeContent, AboutContent, ServicesContent,
     ContactContent, CareersContent, ResourcesContent,
     CaseStudy, Resource, Service,
-    FooterContent # <--- Task 3: FooterContent Imported
+    FooterContent
 )
 
 # 1. Page Admin
 @admin.register(Page)
 class PageAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'slug', 'page_order')
+    list_editable = ('page_order',) 
     search_fields = ('title', 'slug')
     ordering = ('page_order',)
     
-    # SEO Fields
     fieldsets = (
         (None, {'fields': ('title', 'slug')}),
         ('SEO Settings', {
@@ -24,123 +25,109 @@ class PageAdmin(SortableAdminMixin, admin.ModelAdmin):
         }),
     )
 
-# 2. Base Content Admin (Logic for all pages)
-class BaseContentAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ('section_name', 'title', 'updated_at')
+# 2. Base Content Admin
+class BaseContentAdmin(admin.ModelAdmin):
+    # FIX: Changed 'title_editable' to 'title'
+    list_display = ('section_label', 'title', 'content_preview', 'image_preview', 'last_updated')
+    list_display_links = ('section_label',)
+    # FIX: Changed 'title_editable' to 'title'
+    list_editable = ('title',)
     search_fields = ('title', 'content', 'section_name')
     ordering = ('content_order',)
-    save_on_top = True
+    list_per_page = 50 
     
-    # FIX: section_name ko read-only banaya gaya hai.
-    readonly_fields = ('page', 'section_name', 'section', 'updated_at')
+    def has_add_permission(self, request):
+        return False
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def section_label(self, obj):
+        return format_html(
+            '<span style="font-weight:bold; color:#2c3e50;">{}</span><br><span style="font-size:10px; color:#7f8c8d;">{}</span>', 
+            obj.section_name, obj.section
+        )
+    section_label.short_description = "Page Section"
+    
+    def content_preview(self, obj):
+        if not obj.content:
+            return "-"
+        return (obj.content[:75] + '...') if len(obj.content) > 75 else obj.content
+    content_preview.short_description = "Content Preview"
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;" />', obj.image.url)
+        return "-"
+    image_preview.short_description = "Image"
+
+    def last_updated(self, obj):
+        return obj.updated_at.strftime("%d %b, %H:%M")
+    last_updated.short_description = "Updated"
+
+    readonly_fields = ('page', 'section_name', 'section', 'updated_at')
     fieldsets = (
-        ('Section Info', {
-            # FIX: section_name ko yahan se hata diya gaya hai.
-            'fields': ('title', 'image'),
-            'description': 'Main content title and image for this section.'
+        ('Edit Content', {
+            'fields': ('title', 'content', 'image'),
+            'description': 'Update the text or image for this section.'
         }),
-        ('Content', {
-            'fields': ('content',),
-            'description': 'Main text content. HTML is allowed.'
-        }),
-        ('System Data (Do Not Edit)', {
-            # FIX: section_name ko yahan read-only dikhaya jayega.
+        ('Technical Info (Read-Only)', {
             'fields': ('page', 'section_name', 'section', 'updated_at'),
             'classes': ('collapse',),
         }),
     )
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
 
-# 3. Specific Page Admins (Inhein change karne ki zaroorat nahi, Base Admin inherit ho raha hai)
+
+# 3. Specific Page Admins
 @admin.register(HomeContent)
 class HomeContentAdmin(BaseContentAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(page='home')
-    
-    def save_model(self, request, obj, form, change):
-        obj.page = 'home'
-        super().save_model(request, obj, form, change)
+        return super().get_queryset(request).filter(page='home').order_by('content_order')
 
 @admin.register(AboutContent)
 class AboutContentAdmin(BaseContentAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(page='about')
-    
-    def save_model(self, request, obj, form, change):
-        obj.page = 'about'
-        super().save_model(request, obj, form, change)
+        return super().get_queryset(request).filter(page='about').order_by('content_order')
 
 @admin.register(ServicesContent)
 class ServicesContentAdmin(BaseContentAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(page='services')
-
-    def save_model(self, request, obj, form, change):
-        obj.page = 'services'
-        super().save_model(request, obj, form, change)
+        return super().get_queryset(request).filter(page='services').order_by('content_order')
 
 @admin.register(ContactContent)
 class ContactContentAdmin(BaseContentAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(page='contact')
-
-    def save_model(self, request, obj, form, change):
-        obj.page = 'contact'
-        super().save_model(request, obj, form, change)
+        return super().get_queryset(request).filter(page='contact').order_by('content_order')
 
 @admin.register(CareersContent)
 class CareersContentAdmin(BaseContentAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(page='careers')
-
-    def save_model(self, request, obj, form, change):
-        obj.page = 'careers'
-        super().save_model(request, obj, form, change)
+        return super().get_queryset(request).filter(page='careers').order_by('content_order')
 
 @admin.register(ResourcesContent)
 class ResourcesContentAdmin(BaseContentAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(page='resources')
+        return super().get_queryset(request).filter(page='resources').order_by('content_order')
 
-    def save_model(self, request, obj, form, change):
-        obj.page = 'resources'
-        super().save_model(request, obj, form, change)
-
-# <--- Task 3: NEW: Footer Content Admin Registration
 @admin.register(FooterContent)
 class FooterContentAdmin(BaseContentAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(page='footer').order_by('section_name') 
+        return super().get_queryset(request).filter(page='footer').order_by('content_order')
 
-    def save_model(self, request, obj, form, change):
-        obj.page = 'footer' # Ensure all saves go to the 'footer' page
-        super().save_model(request, obj, form, change)
-# NEW: Footer Content Admin Registration --->
-
-# 4. Master Admin (Backup)
+# 4. Master Admin
 @admin.register(SiteContent)
-class SiteContentAdmin(BaseContentAdmin):
-    # Master Admin par hum section_name ko editable rakh sakte hain, but Proxy Admin par nahi.
-    # Lekin simpler rahe isliye yahan bhi read-only rakhenge.
+class SiteContentAdmin(admin.ModelAdmin):
     list_display = ('page', 'section_name', 'title', 'updated_at')
     list_filter = ('page',)
-    readonly_fields = ('section', 'updated_at') 
-    
-    fieldsets = (
-        ('Content Details', {
-            'fields': ('page', 'section_name', 'title', 'content', 'image'),
-        }),
-        ('Metadata', {
-            'fields': ('section', 'updated_at'),
-            'classes': ('collapse',),
-        }),
-    )
+    search_fields = ('title', 'section_name')
 
-# 5. Service, CaseStudy, Resource Registration
+# 5. Other Models
 @admin.register(CaseStudy)
 class CaseStudyAdmin(admin.ModelAdmin):
     list_display = ('title', 'client_name', 'created_at')
-    search_fields = ('title', 'client_name')
 
 @admin.register(Resource)
 class ResourceAdmin(admin.ModelAdmin):
@@ -150,5 +137,6 @@ class ResourceAdmin(admin.ModelAdmin):
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'order')
+    list_editable = ('order',)
     prepopulated_fields = {'slug': ('title',)}
     ordering = ('order',)

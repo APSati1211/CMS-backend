@@ -39,7 +39,6 @@ class SiteContent(models.Model):
         ordering = ["content_order"]
 
     def __str__(self):
-        # FIX for empty log entries: Prioritize Title, then Section Name, then the raw slug.
         name = self.title or self.section_name or self.section
         return f"{self.page.upper()} | {name}"
 
@@ -52,7 +51,9 @@ class SiteContent(models.Model):
 class Page(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
-    page_order = models.PositiveIntegerField(default=0, editable=False, db_index=True)
+    
+    # FIX: Removed 'editable=False' so it can be reordered in Admin
+    page_order = models.PositiveIntegerField(default=0, db_index=True)
     
     # SEO FIELDS
     meta_title = models.CharField(max_length=255, blank=True, help_text="SEO Title (Browser Tab)")
@@ -80,11 +81,8 @@ class CaseStudy(models.Model):
         return self.title
 
 
-# --- UPDATED RESOURCE MODEL ---
 class Resource(models.Model):
     title = models.CharField(max_length=255)
-    
-    # Updated choices to include more document types
     type = models.CharField(max_length=50, choices=[
         ('Whitepaper', 'Whitepaper'), 
         ('E-Book', 'E-Book'), 
@@ -93,10 +91,7 @@ class Resource(models.Model):
         ('Presentation', 'Presentation'),
         ('Dataset', 'Dataset')
     ])
-    
     description = models.TextField(blank=True)
-    
-    # UPDATED FILE FIELD: Allows various document formats
     file = models.FileField(
         upload_to="resources/",
         help_text="Upload your document here (PDF, Excel, CSV, PPT, Word, etc.)",
@@ -104,14 +99,13 @@ class Resource(models.Model):
             'pdf', 'csv', 'xlsx', 'xls', 'ppt', 'pptx', 'doc', 'docx', 'txt', 'zip'
         ])]
     )
-    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
 
-# --- PROXY MODELS FOR ADMIN ORGANIZATION ---
+# --- PROXY MODELS ---
 
 class HomeContent(SiteContent):
     class Meta:
@@ -149,13 +143,11 @@ class ResourcesContent(SiteContent):
         verbose_name = "Page: Resources"
         verbose_name_plural = "Page: Resources Content"
 
-# <--- Task 3: NEW: Footer Content Proxy Model
 class FooterContent(SiteContent):
     class Meta:
         proxy = True
         verbose_name = "Page: Footer"
         verbose_name_plural = "Page: Footer Content"
-# NEW: Footer Content Proxy Model --->
 
 class Service(models.Model):
     title = models.CharField(max_length=200, help_text="e.g. Virtual CFO")

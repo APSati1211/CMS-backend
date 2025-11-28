@@ -19,8 +19,9 @@ from blog.views import BlogPostViewSet, BlogCategoryViewSet
 from leads.views import LeadViewSet, NewsletterSubscriberViewSet, chat_flow_handler
 from contact.views import ContactViewSet
 from careers.views import JobOpeningViewSet, JobApplicationViewSet
+from stakeholders.views import StakeholderViewSet
 
-# --- ROUTER REGISTRATION (Yeh Missing Tha) ---
+# --- ROUTER REGISTRATION ---
 router = DefaultRouter()
 
 # CMS Endpoints
@@ -43,6 +44,9 @@ router.register(r'contact', ContactViewSet, basename='contact')
 router.register(r'jobs', JobOpeningViewSet)
 router.register(r'apply', JobApplicationViewSet)
 
+# Stakeholders Endpoint
+router.register(r'stakeholders', StakeholderViewSet)
+
 
 urlpatterns = [
     path("", home_page_content),
@@ -57,6 +61,12 @@ urlpatterns = [
     
     # Theme URLs
     path("api/", include("theme.urls")),
+
+
+    # --- NEW: Custom Pages URLs ---
+    path("api/", include("homepage.urls")),       # Home Page Data
+    path("api/", include("resources_page.urls")), # Resources Page Data
+    path("api/", include("lead_system_page.urls")), # Lead System Page Data
 ]
 
 if settings.DEBUG:
