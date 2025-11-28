@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
-from decouple import config # <-- NEW: Import config
-import datetime # <-- NEW: Using standard library for time logic
+from decouple import config 
+import datetime 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -17,17 +17,23 @@ SECRET_KEY = config(
 # Load DEBUG from .env file
 DEBUG = config("DEBUG", default=False, cast=bool) 
 
-# --- OPENAI API KEY (ADDED HERE) ---
+# --- OPENAI API KEY ---
 OPENAI_API_KEY = config("OPENAI_API_KEY", default=None) 
 
 # --- ALLOWED HOSTS ---
-ALLOWED_HOSTS = ["*"]
+# Yahan Backend ki IP (13.233.91.34) add ki hai
+ALLOWED_HOSTS = [
+    "13.233.91.34", 
+    "127.0.0.1", 
+    "localhost",
+    "*"
+]
 
 # -----------------------------
 # INSTALLED APPS
 # -----------------------------
 INSTALLED_APPS = [
-    'jazzmin',  # <--- JAZZMIN Added at the TOP
+    'jazzmin', 
 
     'django.contrib.admin',
     "django.contrib.auth",
@@ -82,7 +88,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # --- NEW: Profile Image Context Processor Registration ---
                 "backend.context_processors.user_avatar_context", 
             ],
         },
@@ -117,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # INTERNATIONALIZATION
 # -----------------------------
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "UTC" # <-- Keep as UTC for standard practice
+TIME_ZONE = "UTC" 
 USE_I18N = True
 USE_TZ = True
 
@@ -141,21 +146,20 @@ REST_FRAMEWORK = {
 }
 
 # -----------------------------
-# CORS & CSRF SETTINGS (CRITICAL FOR CHATBOT)
+# CORS & CSRF SETTINGS (UPDATED WITH NEW IPs)
 # -----------------------------
 CORS_ALLOWED_ORIGINS = [
+    "http://65.0.71.42:3000",   # <--- Frontend Live IP
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://xpertai-global.vercel.app", # <--- Example: Deploy link
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
-# --- 🚨 THIS IS THE FIX FOR 403 ERROR ---
 CSRF_TRUSTED_ORIGINS = [
+    "http://65.0.71.42:3000",   # <--- Frontend Live IP
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://xpertai-global.vercel.app",
 ]
 
 # -----------------------------
@@ -165,20 +169,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # ==========================================
-#  DYNAMIC THEME LOGIC (6 AM - 6 PM IST)
-#  (Uses standard datetime to avoid 'pytz' error)
+#  DYNAMIC THEME LOGIC
 # ==========================================
 
-# 1. Calculate current time adjusted to IST (UTC + 5:30)
 IST_OFFSET = datetime.timedelta(hours=5, minutes=30)
 now_utc = datetime.datetime.utcnow()
 now_ist = now_utc + IST_OFFSET
 
-# 2. Determine if it is day time (6 AM to 6 PM IST)
 is_daytime = 6 <= now_ist.hour < 18
 
 if is_daytime:
-    # --- LIGHT MODE CONFIGURATION (6 AM - 6 PM IST) ---
     DYNAMIC_THEME_TWEAKS = {
         "theme": "lux",                     
         "dark_mode_theme": None,            
@@ -188,7 +188,6 @@ if is_daytime:
         "accent": "accent-info",            
     }
 else:
-    # --- DARK MODE CONFIGURATION (6 PM - 6 AM IST) ---
     DYNAMIC_THEME_TWEAKS = {
         "theme": "darkly",                  
         "dark_mode_theme": None,            
@@ -200,11 +199,10 @@ else:
 
 
 # ==========================================
-#  JAZZMIN SETTINGS (Modern Admin UI)
+#  JAZZMIN SETTINGS
 # ==========================================
 
 JAZZMIN_SETTINGS = {
-    # Branding
     "site_title": "XpertAI Admin",
     "site_header": "XpertAI Global",
     "site_brand": "XpertAI CMS",
@@ -212,17 +210,15 @@ JAZZMIN_SETTINGS = {
     "copyright": "XpertAI Global Ltd",
     "search_model": ["auth.User", "cms.Service"],
 
-    # UI Customization
     "topmenu_links": [
         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "View Website", "url": "http://localhost:3000", "new_window": True},
+        {"name": "View Website", "url": "http://65.0.71.42:3000", "new_window": True}, # Updated View Website Link
     ],
     "show_sidebar": True,
     "navigation_expanded": True,
     "hide_apps": [],
     "hide_models": [],
 
-    # Icons
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
@@ -251,9 +247,6 @@ JAZZMIN_SETTINGS = {
     "related_modal_active": True,
     "use_google_fonts_cdn": True,
     "show_ui_builder": True,
-    
-    # --- USER AVATAR CONFIGURATION ---
-    # Jazzmin ko batana ki context se 'user_avatar' variable uthana hai
     "user_avatar": "user_avatar", 
 }
 
@@ -262,20 +255,17 @@ JAZZMIN_UI_TWEAKS = {
     "footer_small_text": False,
     "body_small_text": False,
     "brand_small_text": False,
-    
     "no_navbar_border": False,
     "navbar_fixed": True,
     "layout_boxed": False,
     "footer_fixed": False,
     "sidebar_fixed": True,
-    
     "sidebar_nav_small_text": False,
     "sidebar_disable_expand": False,
     "sidebar_nav_child_indent": False,
     "sidebar_nav_compact_style": False,
     "sidebar_nav_legacy_style": False,
     "sidebar_nav_flat_style": True,
-    
     "button_classes": {
         "primary": "btn-primary",
         "secondary": "btn-secondary",
@@ -284,6 +274,5 @@ JAZZMIN_UI_TWEAKS = {
         "danger": "btn-danger",
         "success": "btn-success"
     },
-    # OVERWRITE BASE TWEAKS WITH DYNAMIC THEME SETTINGS
     **DYNAMIC_THEME_TWEAKS
 }
