@@ -1,24 +1,33 @@
-# Step 1: Base image
+# Use official Python image
 FROM python:3.12-slim
 
-# Step 2: Set working directory
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Set work directory
 WORKDIR /app
 
-# Step 3: Install OS dependencies (optional for psycopg2, pillow, etc.)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
+# System dependencies (add others as needed)
+RUN apt-get update \
+    && apt-get install -y build-essential libpq-dev gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Step 4: Copy requirements and install
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# Step 5: Copy the backend code
-COPY . .
+# Copy project
+COPY . /app
 
-# Step 6: Expose backend port (change if yours is different)
+# Collect static files (if using Django static)
+RUN python manage.py collectstatic --noinput
+
+# Expose port
 EXPOSE 8000
 
-# Step 7: Run Django server (gunicorn recommended)
-CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Entrypoint: update this as needed for your project!
+CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
+
+# If your main app is NOT in core.wsgi, replace core with your Django project's main module name.
