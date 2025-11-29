@@ -23,7 +23,7 @@ OPENAI_API_KEY = config("OPENAI_API_KEY", default=None)
 # --- ALLOWED HOSTS ---
 # Yahan Backend ki IP (13.233.91.34) add ki hai
 ALLOWED_HOSTS = [
-    "3.108.252.40",
+    "15.206.207.118",
     "3.110.26.126", 
     "127.0.0.1", 
     "localhost",
@@ -79,6 +79,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "backend.middleware.ConditionalCoopMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -162,6 +163,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://3.110.26.126:3000",
+    "http://15.206.207.118:8000",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -171,6 +173,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://3.110.26.126:3000",
+    "http://15.206.207.118:8000",
 ]
 
 # -----------------------------
