@@ -28,7 +28,7 @@ jobs:
   deploy:
     needs: build
     # ensure this matches a runner that has docker available and the 'docker' label
-    runs-on: [self-hosted, linux, x64, docker]
+    runs-on: self-hosted
     steps:
       - name: Login to Docker Hub (deploy host)
         env:
