@@ -1,15 +1,30 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import ServiceHero, ServiceCTA
+from .models import (
+    ServiceHero, ServiceProcess, ServiceFeature, 
+    ServiceTestimonial, ServiceFAQ, ServiceCTA
+)
+from .serializers import (
+    ServiceHeroSerializer, ServiceProcessSerializer, ServiceFeatureSerializer, 
+    ServiceTestimonialSerializer, ServiceFAQSerializer, ServiceCTASerializer
+)
+# CMS App se Service List laane ke liye
 from cms.models import Service
-from .serializers import ServiceHeroSerializer, ServiceCTASerializer
 from cms.serializers import ServiceSerializer
 
 class ServicePageDataView(APIView):
     def get(self, request):
+        hero = ServiceHero.objects.first()
+        cta = ServiceCTA.objects.first()
+        
         return Response({
-            "hero": ServiceHeroSerializer(ServiceHero.objects.first()).data if ServiceHero.objects.exists() else None,
-            "cta": ServiceCTASerializer(ServiceCTA.objects.first()).data if ServiceCTA.objects.exists() else None,
-            # Fetch all services directly from CMS app
+            "hero": ServiceHeroSerializer(hero).data if hero else None,
+            "process": ServiceProcessSerializer(ServiceProcess.objects.all(), many=True).data,
+            "features": ServiceFeatureSerializer(ServiceFeature.objects.all(), many=True).data,
+            "testimonials": ServiceTestimonialSerializer(ServiceTestimonial.objects.all(), many=True).data,
+            "faq": ServiceFAQSerializer(ServiceFAQ.objects.all(), many=True).data,
+            "cta": ServiceCTASerializer(cta).data if cta else None,
+            
+            # Actual Services List (Dynamic)
             "services_list": ServiceSerializer(Service.objects.all().order_by('order'), many=True).data
         })

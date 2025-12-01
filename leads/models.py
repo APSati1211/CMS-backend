@@ -11,7 +11,8 @@ class Lead(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} - {self.company or 'N/A'}"
+        # Admin mein agar list_display fail ho, toh ye dikhega
+        return f"{self.name} ({self.service}) - {self.created_at.strftime('%Y-%m-%d')}"
 
 class ChatbotLeadManager(models.Manager):
     def get_queryset(self):

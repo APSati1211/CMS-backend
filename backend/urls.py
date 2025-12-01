@@ -38,7 +38,7 @@ router.register(r'leads', LeadViewSet, basename='lead')
 router.register(r'subscribers', NewsletterSubscriberViewSet)
 router.register(r'contact', ContactViewSet, basename='contact')
 
-# Career Endpoints
+# Career Endpoints (Job Listings & Application)
 router.register(r'jobs', JobOpeningViewSet)
 router.register(r'apply', JobApplicationViewSet)
 
@@ -49,23 +49,27 @@ router.register(r'stakeholders', StakeholderViewSet)
 urlpatterns = [
     path("admin/", admin.site.urls),
     
-    # Router URLs (Isme ab saare viewsets registered hain)
+    # Router URLs (CRUD APIs for all registered viewsets)
     path("api/", include(router.urls)),
     
-    # Custom Handlers (Jo router me nahi aate)
+    # Custom Handlers (Single Function Views)
     path("api/chatbot-flow/", chat_flow_handler),
     path("api/home-page-content/", home_page_content),
     
     # Theme URLs
     path("api/", include("theme.urls")),
     
-    # --- CUSTOM PAGES URLs ---
+    # --- CUSTOM PAGES URLs (Page Specific Data) ---
     path("api/", include("homepage.urls")),       # Home Page Data
+    path("api/about-page-data/", include("about.urls")), # About Page Data
     path("api/", include("resources_page.urls")), # Resources Page Data
     path("api/", include("lead_system_page.urls")), # Lead System Page Data
     path("api/legal/", include("legal.urls")),    # Legal Page Data
     path("api/", include("services_page.urls")),  # Services Page Data
+    path('api/', include('careers.urls')),        # Careers Page Data (New)
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    

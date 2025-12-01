@@ -1,6 +1,6 @@
 from pathlib import Path
 import os
-from decouple import config 
+from decouple import config, Csv  # <--- Csv import zaroori hai
 import datetime 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -14,21 +14,15 @@ SECRET_KEY = config(
     default="django-insecure-1234567890-your-secret-key"
 )
 
-# Load DEBUG from .env file
-DEBUG =  
+# Load DEBUG from .env file (Fixed: ab ye boolean cast karega)
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 # --- OPENAI API KEY ---
 OPENAI_API_KEY = config("OPENAI_API_KEY", default=None) 
 
 # --- ALLOWED HOSTS ---
-# Yahan Backend ki IP (13.233.91.34) add ki hai
-ALLOWED_HOSTS = [
-    " ",
-    " ", 
-    " ", 
-    " ",
-    "*"
-]
+# .env se comma separated list padhega
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="127.0.0.1,localhost", cast=Csv())
 
 # -----------------------------
 # INSTALLED APPS
@@ -58,11 +52,12 @@ INSTALLED_APPS = [
     "pages",
     "careers",
     'stakeholders',
-    'homepage',     # <--- ALREADY ADDED (GOOD)
+    'homepage',
     'resources_page',
     'lead_system_page',
-    'legal',      # <--- NEW APP
-    'services_page', # <--- NEW APP
+    'legal',
+    'services_page',
+    'about',
 ]
 
 # -----------------------------
@@ -73,8 +68,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    # --- NEW: Auto Theme Middleware ---
-    "backend.middleware.AutomaticThemeMiddleware",
+    "backend.middleware.AutomaticThemeMiddleware", # Auto Theme Middleware
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -155,25 +149,13 @@ REST_FRAMEWORK = {
 }
 
 # -----------------------------
-# CORS & CSRF SETTINGS (UPDATED WITH NEW IPs)
+# CORS & CSRF SETTINGS
 # -----------------------------
-CORS_ALLOWED_ORIGINS = [
-    " ",   # <--- Frontend Live IP
-    " ",
-    " ",
-    " ",
-    " ",
-]
-
+# .env se URLs ki list padhega (React frontend allow karne ke liye)
+CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="http://localhost:3000,http://127.0.0.1:3000", cast=Csv())
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    " ",   # <--- Frontend Live IP
-    " ",
-    " ",
-    " ",
-    " ",
-]
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="http://localhost:3000,http://127.0.0.1:3000", cast=Csv())
 
 # -----------------------------
 # DEFAULT PRIMARY KEY
@@ -225,7 +207,8 @@ JAZZMIN_SETTINGS = {
 
     "topmenu_links": [
         {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
-        {"name": "View Website", "url": " ", "new_window": True}, # Updated View Website Link
+        # View Website Link ko Localhost par point kiya hai agar .env mein url set nahi hai
+        {"name": "View Website", "url": config("VIEW_SITE_URL", default="http://localhost:3000"), "new_window": True}, 
     ],
     "show_sidebar": True,
     "navigation_expanded": True,

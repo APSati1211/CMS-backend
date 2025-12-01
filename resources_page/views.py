@@ -8,9 +8,12 @@ from .serializers import (
 
 class ResourcesPageDataView(APIView):
     def get(self, request):
+        hero = ResourcesHero.objects.first()
+        titles = SectionTitles.objects.first()
+        
         return Response({
-            "hero": ResourcesHeroSerializer(ResourcesHero.objects.first()).data if ResourcesHero.objects.exists() else None,
-            "titles": SectionTitlesSerializer(SectionTitles.objects.first()).data if SectionTitles.objects.exists() else None,
+            "hero": ResourcesHeroSerializer(hero).data if hero else None,
+            "titles": SectionTitlesSerializer(titles).data if titles else None,
             "case_studies": CaseStudySerializer(CaseStudy.objects.all(), many=True).data,
             "downloads": DownloadableResourceSerializer(DownloadableResource.objects.all(), many=True).data,
         })

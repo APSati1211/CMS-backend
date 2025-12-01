@@ -20,4 +20,3 @@ class DownloadableResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DownloadableResource
         fields = '__all__'
-        
