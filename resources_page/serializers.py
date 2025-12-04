@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ResourcesHero, SectionTitles, CaseStudy, DownloadableResource
+from .models import ResourcesHero, SectionTitles, CaseStudy, DownloadableResource, UsefulLink
 
 class ResourcesHeroSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,4 +19,9 @@ class CaseStudySerializer(serializers.ModelSerializer):
 class DownloadableResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DownloadableResource
+        fields = '__all__'
+
+class UsefulLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UsefulLink
         fields = '__all__'

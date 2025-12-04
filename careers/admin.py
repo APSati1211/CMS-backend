@@ -1,6 +1,6 @@
 from django.contrib import admin
 from adminsortable2.admin import SortableAdminMixin
-from .models import CareersPage, Benefit, JobOpening, JobApplication
+from .models import CareersPage, Benefit, JobOpening, JobApplication, EmployeeTestimonial # <--- Added
 
 @admin.register(CareersPage)
 class CareersPageAdmin(admin.ModelAdmin):
@@ -10,6 +10,10 @@ class CareersPageAdmin(admin.ModelAdmin):
 @admin.register(Benefit)
 class BenefitAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'icon_name', 'order')
+
+@admin.register(EmployeeTestimonial) # <--- New Admin
+class EmployeeTestimonialAdmin(SortableAdminMixin, admin.ModelAdmin):
+    list_display = ('name', 'role', 'order')
 
 @admin.register(JobOpening)
 class JobOpeningAdmin(admin.ModelAdmin):
@@ -21,4 +25,3 @@ class JobOpeningAdmin(admin.ModelAdmin):
 class JobApplicationAdmin(admin.ModelAdmin):
     list_display = ('applicant_name', 'job', 'email', 'applied_at')
     list_filter = ('job', 'applied_at')
-    search_fields = ('applicant_name', 'email')

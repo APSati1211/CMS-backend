@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteContent, CaseStudy, Resource, Service # <--- Service Added
+from .models import SiteContent, CaseStudy, Resource, Service, ServiceSubService # <--- Added
 
 class SiteContentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,7 +16,17 @@ class ResourceSerializer(serializers.ModelSerializer):
         model = Resource
         fields = '__all__'
 
-class ServiceSerializer(serializers.ModelSerializer): # <--- NEW SERIALIZER
+# --- SERVICE SERIALIZERS ---
+
+class ServiceSubServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceSubService
+        fields = ['id', 'title', 'description', 'order']
+
+class ServiceSerializer(serializers.ModelSerializer):
+    # This will automatically include the sub-services array in the JSON response
+    sub_services = ServiceSubServiceSerializer(many=True, read_only=True)
+
     class Meta:
         model = Service
         fields = '__all__'

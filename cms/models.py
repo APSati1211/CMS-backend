@@ -51,8 +51,6 @@ class SiteContent(models.Model):
 class Page(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
-    
-    # FIX: Removed 'editable=False' so it can be reordered in Admin
     page_order = models.PositiveIntegerField(default=0, db_index=True)
     
     # SEO FIELDS
@@ -105,6 +103,41 @@ class Resource(models.Model):
         return self.title
 
 
+# --- SERVICE MODELS (UPDATED) ---
+
+class Service(models.Model):
+    title = models.CharField(max_length=200, help_text="e.g. Virtual CFO")
+    slug = models.SlugField(unique=True, help_text="URL friendly name, e.g. virtual-cfo")
+    short_description = models.TextField(help_text="Shown on the main Services page card")
+    full_description = models.TextField(blank=True, null=True, help_text="Optional intro text shown on the detail page before the list.")
+    icon = models.CharField(max_length=50, default="Briefcase", help_text="Icon name (e.g. Briefcase, BarChart)")
+    image = models.ImageField(upload_to="services/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title
+
+class ServiceSubService(models.Model):
+    """
+    Detailed sub-points for a service (e.g. 'Statutory Audit' under 'Audit').
+    """
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='sub_services')
+    title = models.CharField(max_length=200, help_text="e.g. 1. Statutory & Tax Audits")
+    description = models.TextField(help_text="Detailed explanation of this sub-service.")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Service Sub-Point"
+        verbose_name_plural = "Service Sub-Points"
+
+    def __str__(self):
+        return self.title
+
+
 # --- PROXY MODELS ---
 
 class HomeContent(SiteContent):
@@ -148,18 +181,3 @@ class FooterContent(SiteContent):
         proxy = True
         verbose_name = "Page: Footer"
         verbose_name_plural = "Page: Footer Content"
-
-class Service(models.Model):
-    title = models.CharField(max_length=200, help_text="e.g. Virtual CFO")
-    slug = models.SlugField(unique=True, help_text="URL friendly name, e.g. virtual-cfo")
-    short_description = models.TextField(help_text="Shown on the main Services page card")
-    full_description = models.TextField(help_text="Shown on the detailed service page. HTML allowed.")
-    icon = models.CharField(max_length=50, default="Briefcase", help_text="Icon name (e.g. Briefcase, BarChart)")
-    image = models.ImageField(upload_to="services/", blank=True, null=True)
-    order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['order']
-
-    def __str__(self):
-        return self.title

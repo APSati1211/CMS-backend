@@ -67,3 +67,17 @@ class Award(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.year})"
+
+class TechStack(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    icon_name = models.CharField(max_length=50, default="Cpu", help_text="Lucide Icon Name (e.g. Cpu, Link, Bot)")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Technology Stack"
+        verbose_name_plural = "Technology Stack"
+
+    def __str__(self):
+        return self.title

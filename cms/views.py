@@ -2,9 +2,12 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .sections import get_section_slugs
-from .models import SiteContent, CaseStudy, Resource, Service, Page # <--- Added Page
-from .serializers import SiteContentSerializer, CaseStudySerializer, ResourceSerializer, ServiceSerializer
-from rest_framework import serializers # Needed for inline serializer
+from .models import SiteContent, CaseStudy, Resource, Service, Page
+from .serializers import (
+    SiteContentSerializer, CaseStudySerializer, 
+    ResourceSerializer, ServiceSerializer
+)
+from rest_framework import serializers 
 
 @api_view(['GET'])
 def get_section_choices(request, page):
@@ -39,11 +42,11 @@ class ResourceViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ResourceSerializer
 
 class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Service.objects.all()
+    queryset = Service.objects.all().order_by('order')
     serializer_class = ServiceSerializer
     lookup_field = 'slug'
 
-# --- NEW: PAGE VIEWSET FOR NAVBAR ---
+# --- PAGE VIEWSET FOR NAVBAR ---
 class PageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page

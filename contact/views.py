@@ -1,7 +1,21 @@
 from rest_framework import viewsets, mixins
-from .models import ContactMessage
-from .serializers import ContactSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import ContactMessage, ContactPage, OfficeAddress
+from .serializers import ContactSerializer, ContactPageSerializer, OfficeAddressSerializer
 
-class ContactViewSet(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = ContactMessage.objects.all().order_by("-created_at")
+# Form Submission View
+class ContactViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = ContactMessage.objects.all()
     serializer_class = ContactSerializer
+
+# Page Data View
+class ContactPageDataView(APIView):
+    def get(self, request):
+        content = ContactPage.objects.first()
+        addresses = OfficeAddress.objects.all()
+        
+        return Response({
+            "content": ContactPageSerializer(content).data if content else None,
+            "addresses": OfficeAddressSerializer(addresses, many=True).data,
+        })

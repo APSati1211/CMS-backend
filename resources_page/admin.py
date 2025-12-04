@@ -1,6 +1,6 @@
 from django.contrib import admin
 from adminsortable2.admin import SortableAdminMixin
-from .models import ResourcesHero, SectionTitles, CaseStudy, DownloadableResource
+from .models import ResourcesHero, SectionTitles, CaseStudy, DownloadableResource, UsefulLink
 
 @admin.register(ResourcesHero)
 class ResourcesHeroAdmin(admin.ModelAdmin):
@@ -19,3 +19,8 @@ class CaseStudyAdmin(SortableAdminMixin, admin.ModelAdmin):
 @admin.register(DownloadableResource)
 class DownloadableResourceAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'resource_type', 'order')
+
+@admin.register(UsefulLink)
+class UsefulLinkAdmin(SortableAdminMixin, admin.ModelAdmin):
+    list_display = ('title', 'url', 'order')
+    list_editable = ('order',)

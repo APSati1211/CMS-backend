@@ -1,48 +1,86 @@
 from django.db import models
-from django.contrib.auth.models import User 
-from django.db.models.signals import post_save # <-- NEW
-from django.dispatch import receiver # <-- NEW
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-# Example model (Existing)
+# --- 1. EXISTING MODELS ---
 class ExampleModel(models.Model):
     name = models.CharField(max_length=255)
+    def __str__(self): return self.name
 
-    def __str__(self):
-        return self.name
-
-# Website Theme (Existing)
 class Theme(models.Model):
     primary_color = models.CharField(max_length=7, default='#000000')
     secondary_color = models.CharField(max_length=7, default='#FFFFFF')
+    def __str__(self): return "Website Theme"
 
-    def __str__(self):
-        return "Website Theme"
+# --- 2. UPDATED USER SYSTEM ---
 
-# --- NEW: USER PROFILE MODEL ---
+USER_ROLES = (
+    ('admin', 'Admin'),
+    ('client', 'Client'),
+    ('professional', 'Professional/Agency'),
+    ('freelancer', 'Freelancer'),
+    ('trainer', 'Training Institute/Trainer'),
+)
+
 class UserProfile(models.Model):
-    # One-to-One link with User model
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    # FIX: primary_key=True wapis add kiya hai taaki migration error na aaye
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=True)
     
-    # Image field for profile picture
-    image = models.ImageField(
-        upload_to='profiles/', 
-        blank=True, 
-        null=True,
-        help_text="User profile picture for display in Admin header."
-    )
+    # Role Selection
+    role = models.CharField(max_length=20, choices=USER_ROLES, default='client')
+    
+    # Common Fields
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    # Note: Hum 'image' field hata nahi rahe, balki rename/reuse kar rahe hain taaki conflict kam ho
+    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    
+    # Verification Status
+    is_verified = models.BooleanField(default=False)
     
     def __str__(self):
-        return f"Profile for {self.user.username}"
+        return f"{self.user.username} - {self.get_role_display()}"
 
-# Signal: Naye User ke bante hi ek UserProfile object automatically banao
+# --- SPECIFIC PROFILES ---
+
+class ClientProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='client_profile')
+    company_name = models.CharField(max_length=255, blank=True)
+    gst_number = models.CharField(max_length=50, blank=True)
+    industry = models.CharField(max_length=100, blank=True)
+    
+    def __str__(self):
+        return f"Client: {self.company_name or self.user.username}"
+
+class ProfessionalProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='professional_profile')
+    skills = models.TextField(help_text="Comma separated skills (e.g. Audit, GST, Python)")
+    experience_years = models.PositiveIntegerField(default=0)
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    resume = models.FileField(upload_to='resumes/', blank=True, null=True)
+    is_agency = models.BooleanField(default=False, help_text="Check if this is an Agency")
+    
+    def __str__(self):
+        return f"Pro: {self.user.username}"
+
+class TrainingProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='training_profile')
+    institute_name = models.CharField(max_length=255)
+    courses_offered = models.TextField(help_text="List of courses")
+    
+    def __str__(self):
+        return f"Trainer: {self.institute_name}"
+
+# --- SIGNALS ---
 @receiver(post_save, sender=User)
-def create_or_update_user_profile(sender, instance, created, **kwargs):
+def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
-    # Ensure profile is saved if User object is saved later
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
     try:
-        instance.userprofile.save()
+        instance.profile.save()
     except UserProfile.DoesNotExist:
-        # Handle case where profile was deleted manually but user wasn't
-        if not created:
-            UserProfile.objects.create(user=instance)
+        UserProfile.objects.create(user=instance)

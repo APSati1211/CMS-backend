@@ -74,3 +74,16 @@ class DownloadableResource(models.Model):
 
     def __str__(self):
         return self.title
+    
+class UsefulLink(models.Model):
+    title = models.CharField(max_length=255, help_text="e.g. 'ICAI Official Website'")
+    url = models.URLField(help_text="External URL (e.g. https://www.icai.org/)")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Useful Link"
+        verbose_name_plural = "Useful Links"
+
+    def __str__(self):
+        return self.title

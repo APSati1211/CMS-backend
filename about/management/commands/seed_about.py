@@ -1,83 +1,115 @@
 from django.core.management.base import BaseCommand
-from about.models import AboutPage, TeamMember, Award
+from about.models import AboutPage, TeamMember, Award, TechStack
 
 class Command(BaseCommand):
-    help = 'Seeds the About Page with rich dummy data (Hero, Story, Team, Awards)'
+    help = 'Seeds the About Page content according to Document 2 structure'
 
     def handle(self, *args, **kwargs):
         self.stdout.write('🚀 Seeding About Page Data...')
 
-        # --- 1. ABOUT PAGE CONTENT (Singleton) ---
+        # --- 1. COMPANY OVERVIEW & CORE CONTENT ---
+        # Updated titles to match Document 2 (Company Overview, Mission, Vision, Values)
         about_data = {
             "hero_title": "About XpertAI Global",
-            "hero_subtitle": "Pioneering the future of financial intelligence with AI-driven precision.",
+            "hero_subtitle": "Redefining financial outsourcing with AI-powered precision and blockchain transparency.",
             
+            # i. Company Overview
+            "story_title": "Company Overview",
+            "story_text": "XpertAI Global is a next-generation marketplace for financial outsourcing, connecting businesses with verified professionals through an AI-powered matching engine.\n\nWe record performance metrics on a blockchain ledger to ensure absolute trust and transparency. Our platform automates the traditional friction of hiring, managing, and auditing financial services.",
+            # Note: The 'story_image' field in the CMS will serve as the "Infographic" placeholder
+            
+            # ii. Mission, Vision & Values
             "mission_title": "Our Mission",
-            "mission_text": "To democratize high-end financial analytics for businesses of all sizes, ensuring transparency and growth.",
+            "mission_text": "To democratize high-end financial analytics and compliance for businesses globally through automation.",
             
             "vision_title": "Our Vision",
-            "vision_text": "A world where financial decisions are automated, accurate, and strategic, freeing humans to innovate.",
+            "vision_text": "A world where financial trust is automated, and every business decision is data-driven.",
             
             "values_title": "Our Values",
-            "values_text": "Integrity, Innovation, and Impact - the core pillars driving every solution we build.",
+            "values_text": "Transparency, Innovation, and Accuracy. We believe in code-enforced trust.",
             
-            "story_title": "Our Story",
-            "story_text": "Founded in 2020 by a group of financial experts and AI engineers, XpertAI started with a simple idea: Remove the manual drudgery from finance. \n\nWhat began in a small garage in Bangalore has now grown into a global consultancy serving Fortune 500 companies. We believe that technology should serve people, not the other way around.",
-            
-            "global_title": "Global Presence",
-            "global_stats": "Trusted by 500+ Clients in 20+ Countries",
-            
+            # Extra Sections (kept for completeness)
+            "global_title": "Global Reach",
+            "global_stats": "Serving Clients in 20+ Countries",
             "awards_title": "Awards & Recognition",
-            
             "csr_title": "Sustainability & CSR",
-            "csr_text": "We are committed to a net-zero carbon footprint. Our data centers run on 100% renewable energy, and we actively support digital literacy programs in rural India.",
-            
-            "cta_title": "Ready to Transform Your Finance?",
-            "cta_text": "Join the revolution of automated financial intelligence today."
+            "csr_text": "Committed to green computing and paperless financial workflows.",
+            "cta_title": "Join the Revolution",
+            "cta_text": "Experience the future of finance today."
         }
 
-        # Create or Update the single AboutPage record
-        obj, created = AboutPage.objects.update_or_create(id=1, defaults=about_data)
-        if created:
-            self.stdout.write("   ✅ Created About Page Content")
-        else:
-            self.stdout.write("   ✅ Updated About Page Content")
+        AboutPage.objects.update_or_create(id=1, defaults=about_data)
+        self.stdout.write("   ✅ About Page Content Updated")
 
-        # --- 2. TEAM MEMBERS ---
+        # --- 2. LEADERSHIP & ADVISORY TEAM ---
+        # iii. Leadership & Advisory Team
         team_data = [
-            {"name": "Aditi Rao", "role": "Chief Executive Officer", "order": 1},
-            {"name": "Rajesh Kumar", "role": "Chief Technology Officer", "order": 2},
-            {"name": "Sarah Jenkins", "role": "Head of Finance", "order": 3},
-            {"name": "Michael Chen", "role": "VP of AI Research", "order": 4},
+            {"name": "Aditi Rao", "role": "Chief Executive Officer", "order": 1, "bio": "Ex-Goldman Sachs with 15 years in Fintech."},
+            {"name": "Rajesh Kumar", "role": "Chief Technology Officer", "order": 2, "bio": "AI Researcher specializing in Large Language Models."},
+            {"name": "Dr. Sarah Jenkins", "role": "Advisory Board Member", "order": 3, "bio": "Ph.D. in Forensic Accounting & Blockchain Ethics."},
+            {"name": "Michael Chen", "role": "Head of Finance", "order": 4, "bio": "CPA with a decade of experience in cross-border tax."},
         ]
 
+        # Clear existing to ensure clean slate
+        TeamMember.objects.all().delete()
+        
         for member in team_data:
-            TeamMember.objects.update_or_create(
+            TeamMember.objects.create(
                 name=member['name'],
-                defaults={
-                    "role": member['role'],
-                    "order": member['order'],
-                    "bio": f"{member['name']} leads our team with over 15 years of experience in the industry.",
-                    # "image": You can upload images via admin later
-                }
+                role=member['role'],
+                order=member['order'],
+                bio=member.get('bio', '')
             )
-            self.stdout.write(f"   ✅ Team Member: {member['name']}")
+        self.stdout.write("   ✅ Leadership & Advisory Team Updated")
 
-        # --- 3. AWARDS ---
-        awards_data = [
-            {"title": "Best Fintech Startup", "year": "2024", "description": "Awarded by Global Finance Forum for excellence in automation."},
-            {"title": "AI Innovation Award", "year": "2023", "description": "Recognized for our breakthrough predictive tax algorithms."},
-            {"title": "Great Place to Work", "year": "2022", "description": "Certified for our outstanding company culture and employee growth."},
+        # --- 3. TECHNOLOGY STACK ---
+        # iv. Technology Stack (AI, Automation, Blockchain)
+        tech_data = [
+            {
+                "title": "Artificial Intelligence",
+                "description": "Proprietary ML matching engine and predictive analytics.",
+                "icon_name": "BrainCircuit",
+                "order": 1
+            },
+            {
+                "title": "Robotic Automation",
+                "description": "RPA bots for reconciliation and compliance filings.",
+                "icon_name": "Bot",
+                "order": 2
+            },
+            {
+                "title": "Blockchain Ledger",
+                "description": "Immutable performance and transaction recording.",
+                "icon_name": "Link",
+                "order": 3
+            },
+            {
+                "title": "Secure Cloud",
+                "description": "Bank-grade encryption and global data availability.",
+                "icon_name": "Cloud",
+                "order": 4
+            }
         ]
 
-        for award in awards_data:
-            Award.objects.update_or_create(
-                title=award['title'],
-                defaults={
-                    "year": award['year'],
-                    "description": award['description']
-                }
-            )
-            self.stdout.write(f"   ✅ Award: {award['title']}")
+        TechStack.objects.all().delete()
 
-        self.stdout.write(self.style.SUCCESS('\n🎉 About Page Seeded Successfully!'))
+        for item in tech_data:
+            TechStack.objects.create(
+                title=item['title'],
+                description=item['description'],
+                icon_name=item['icon_name'],
+                order=item['order']
+            )
+        self.stdout.write("   ✅ Technology Stack Updated")
+
+        # --- 4. AWARDS (Optional/Extra) ---
+        awards_data = [
+            {"title": "Best Fintech Innovation", "year": "2024", "description": "Global Finance Summit"},
+            {"title": "AI Excellence Award", "year": "2023", "description": "TechCrunch Disrupt"},
+        ]
+        Award.objects.all().delete()
+        for award in awards_data:
+            Award.objects.create(**award)
+        self.stdout.write("   ✅ Awards Updated")
+
+        self.stdout.write(self.style.SUCCESS('\n🎉 About Page Seeded According to Doc 2!'))

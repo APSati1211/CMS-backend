@@ -1,11 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from adminsortable2.admin import SortableAdminMixin
+from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from .models import (
     SiteContent, Page,
     HomeContent, AboutContent, ServicesContent,
     ContactContent, CareersContent, ResourcesContent,
-    CaseStudy, Resource, Service,
+    CaseStudy, Resource, Service, ServiceSubService, # <--- Added ServiceSubService
     FooterContent
 )
 
@@ -27,10 +27,8 @@ class PageAdmin(SortableAdminMixin, admin.ModelAdmin):
 
 # 2. Base Content Admin
 class BaseContentAdmin(admin.ModelAdmin):
-    # FIX: Changed 'title_editable' to 'title'
     list_display = ('section_label', 'title', 'content_preview', 'image_preview', 'last_updated')
     list_display_links = ('section_label',)
-    # FIX: Changed 'title_editable' to 'title'
     list_editable = ('title',)
     search_fields = ('title', 'content', 'section_name')
     ordering = ('content_order',)
@@ -134,9 +132,16 @@ class ResourceAdmin(admin.ModelAdmin):
     list_display = ('title', 'type', 'created_at')
     list_filter = ('type',)
 
+# --- SERVICE ADMIN with INLINE SUB-SERVICES ---
+class ServiceSubServiceInline(SortableInlineAdminMixin, admin.TabularInline):
+    model = ServiceSubService
+    extra = 1
+    fields = ('title', 'description', 'order')
+
 @admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('title', 'slug', 'order')
     list_editable = ('order',)
     prepopulated_fields = {'slug': ('title',)}
+    inlines = [ServiceSubServiceInline]
     ordering = ('order',)

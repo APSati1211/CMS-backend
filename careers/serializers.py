@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CareersPage, Benefit, JobOpening, JobApplication
+from .models import CareersPage, Benefit, JobOpening, JobApplication, EmployeeTestimonial
 
 class CareersPageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,6 +9,11 @@ class CareersPageSerializer(serializers.ModelSerializer):
 class BenefitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Benefit
+        fields = '__all__'
+
+class EmployeeTestimonialSerializer(serializers.ModelSerializer): # <--- New
+    class Meta:
+        model = EmployeeTestimonial
         fields = '__all__'
 
 class JobOpeningSerializer(serializers.ModelSerializer):
