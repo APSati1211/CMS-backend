@@ -11,17 +11,18 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # install deps
-COPY requirements.txt .
+COPY requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+    && pip install -r /app/requirements.txt
 
 # copy code
 COPY . /app
 
-# collect static files (only if settings allow it during build)
+# collect static files (if set up) and run migrations
+# NOTE: fixed typo "migarte" -> "migrate". Use "|| true" to avoid hard build failure on DB absence.
 RUN python manage.py collectstatic --noinput || true \
-   &&  python manage.py makemigrations \
-   &&  python manage.py migarte
+ && python manage.py makemigrations || true \
+ && python manage.py migrate --noinput || true
 
 EXPOSE 8000
 
