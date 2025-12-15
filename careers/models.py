@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import FileExtensionValidator
 
 class CareersPage(models.Model):
     # Singleton Model for Page Content
@@ -33,7 +34,6 @@ class Benefit(models.Model):
     def __str__(self):
         return self.title
 
-# --- NEW MODEL: EMPLOYEE TESTIMONIAL ---
 class EmployeeTestimonial(models.Model):
     name = models.CharField(max_length=100)
     role = models.CharField(max_length=100)
@@ -71,7 +71,17 @@ class JobApplication(models.Model):
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True)
     linkedin_url = models.URLField(blank=True)
-    resume_link = models.URLField(help_text="Link to Google Drive/Dropbox file")
+    
+    # --- UPDATED FIELDS ---
+    resume_link = models.URLField(blank=True, null=True, help_text="Optional Link to Resume (Google Drive/Dropbox)")
+    resume_file = models.FileField(
+        upload_to="resumes/",
+        null=True,   # <--- Add this
+        blank=True,  # <--- Add this
+        help_text="Upload Resume (PDF Only)",
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])]
+    )#----------------------
+
     cover_letter = models.TextField(blank=True)
     applied_at = models.DateTimeField(auto_now_add=True)
 
