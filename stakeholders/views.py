@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Stakeholder, SolutionsPage
@@ -22,3 +22,9 @@ class SolutionsPageDataView(APIView):
             "content": page_serializer.data,
             "solutions": cards_serializer.data
         })
+
+# --- NEW VIEW FOR DETAIL PAGE ---
+class SolutionDetailView(generics.RetrieveAPIView):
+    queryset = Stakeholder.objects.all()
+    serializer_class = StakeholderSerializer
+    lookup_field = 'slug'  # We will find the solution by its slug, not ID
