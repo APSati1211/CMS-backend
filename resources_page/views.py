@@ -1,3 +1,4 @@
+from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import (
@@ -8,28 +9,45 @@ from .serializers import (
     ResourcesHeroSerializer, SectionTitlesSerializer, CaseStudySerializer,
     DownloadableResourceSerializer, UsefulLinkSerializer
 )
-# --- Import Blog Models & Serializers ---
 from blog.models import BlogPost
 from blog.serializers import BlogPostSerializer
 
+# --- 1. Public Data View (Read Only) ---
 class ResourcesPageDataView(APIView):
     def get(self, request):
-        # Fetch latest 4 published blogs
+        # Auto-create singletons if missing
+        hero, _ = ResourcesHero.objects.get_or_create(id=1)
+        titles, _ = SectionTitles.objects.get_or_create(id=1)
+        
         latest_blogs = BlogPost.objects.filter(published=True).order_by('-created_at')[:4]
 
         return Response({
-            "hero": ResourcesHeroSerializer(ResourcesHero.objects.first()).data if ResourcesHero.objects.exists() else None,
-            "titles": SectionTitlesSerializer(SectionTitles.objects.first()).data if SectionTitles.objects.exists() else None,
-            
-            # --- 1. BLOGS (Latest 4) ---
+            "hero": ResourcesHeroSerializer(hero).data,
+            "titles": SectionTitlesSerializer(titles).data,
             "latest_blogs": BlogPostSerializer(latest_blogs, many=True).data,
-
-            # --- 2. CASE STUDIES ---
             "case_studies": CaseStudySerializer(CaseStudy.objects.all(), many=True).data,
-            
-            # --- 3. TEMPLATES (Downloads) ---
             "downloads": DownloadableResourceSerializer(DownloadableResource.objects.all(), many=True).data,
-            
-            # --- 4. USEFUL LINKS ---
             "useful_links": UsefulLinkSerializer(UsefulLink.objects.all(), many=True).data 
         })
+
+# --- 2. Admin CRUD ViewSets ---
+
+class ResourcesHeroViewSet(viewsets.ModelViewSet):
+    queryset = ResourcesHero.objects.all()
+    serializer_class = ResourcesHeroSerializer
+
+class SectionTitlesViewSet(viewsets.ModelViewSet):
+    queryset = SectionTitles.objects.all()
+    serializer_class = SectionTitlesSerializer
+
+class CaseStudyViewSet(viewsets.ModelViewSet):
+    queryset = CaseStudy.objects.all().order_by('order')
+    serializer_class = CaseStudySerializer
+
+class DownloadableResourceViewSet(viewsets.ModelViewSet):
+    queryset = DownloadableResource.objects.all().order_by('order')
+    serializer_class = DownloadableResourceSerializer
+
+class UsefulLinkViewSet(viewsets.ModelViewSet):
+    queryset = UsefulLink.objects.all().order_by('order')
+    serializer_class = UsefulLinkSerializer

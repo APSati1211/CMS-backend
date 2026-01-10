@@ -1,22 +1,32 @@
 from rest_framework import serializers
 from .models import BlogPost, BlogCategory
 
-# --- 1. NEW: BlogCategory Serializer ---
 class BlogCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogCategory
         fields = ['id', 'name', 'slug']
 
-# --- 2. UPDATED: BlogPost Serializer ---
 class BlogPostSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(required=False)
-    # This will show the full category object (id, name, slug) instead of just the ID
+    
+    # Read Only: Show full category details
     category = BlogCategorySerializer(read_only=True)
     
-    # If you need to write to the category field using an ID, you might need a separate field or logic, 
-    # but for reading/displaying, this is best.
+    # Write Only: Accept category ID from Admin
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=BlogCategory.objects.all(), 
+        source='category', 
+        write_only=True, 
+        required=False, 
+        allow_null=True
+    )
 
     class Meta:
         model = BlogPost
-        # Added 'category' to fields
-        fields = ["id", "title", "slug", "short_description", "body", "image", "published", "created_at", "category"]
+        fields = [
+            "id", "title", "slug", "short_description", "body", 
+            "image", "published", "created_at", 
+            "category", "category_id"
+        ]
+        # FIX: Make slug read-only so the API doesn't demand it
+        read_only_fields = ['slug', 'created_at']

@@ -30,6 +30,7 @@ class HomePageContent(models.Model):
     cta_title = models.CharField(max_length=255, default="Ready to Transform?")
     cta_text = models.TextField(default="Join 500+ companies streamlining their finance today.")
     cta_btn_text = models.CharField(max_length=50, default="Get Started")
+    cta_btn_link = models.CharField(max_length=100, default="/contact")
 
     def __str__(self):
         return "Home Page Main Content"
@@ -55,6 +56,7 @@ class TrustedClient(models.Model):
 class Stat(models.Model):
     value = models.CharField(max_length=50, help_text="e.g. 500+")
     label = models.CharField(max_length=100, help_text="e.g. Clients Served")
+    icon = models.CharField(max_length=50, default="Users")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -67,7 +69,7 @@ class ProcessStep(models.Model):
     step_number = models.CharField(max_length=10, default="01")
     title = models.CharField(max_length=100)
     description = models.TextField()
-    icon_name = models.CharField(max_length=50, default="Settings", help_text="Lucide Icon Name")
+    icon_name = models.CharField(max_length=50, default="Settings")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteContent, CaseStudy, Resource, Service, ServiceSubService # <--- Added
+from .models import SiteContent, CaseStudy, Resource, Service, ServiceSubService, Page
 
 class SiteContentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,4 +29,10 @@ class ServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Service
+        fields = '__all__'
+
+# --- PAGE SERIALIZER (For Navbar/SEO) ---
+class PageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Page
         fields = '__all__'

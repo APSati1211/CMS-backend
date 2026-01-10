@@ -1,24 +1,18 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import api_view, permission_classes
-from .serializers import UserRegistrationSerializer
+from rest_framework.parsers import MultiPartParser, FormParser 
+from .serializers import UserRegistrationSerializer, UserProfileSerializer
+from .models import UserProfile
 
-# --- MISSING VIEW ADDED HERE ---
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def home(request):
-    """
-    Basic API Root view to prevent 404 on localhost:8000/
-    """
-    return Response({
-        "message": "Welcome to XpertAI API System",
-        "status": "Running"
-    })
+    return Response({"message": "Welcome to XpertAI API System", "status": "Running"})
 
-# --- EXISTING VIEWS ---
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
@@ -42,7 +36,6 @@ class CustomLoginView(ObtainAuthToken):
         user = serializer.validated_data['user']
         token, created = Token.objects.get_or_create(user=user)
         
-        # Determine User Role
         role = "client"
         if hasattr(user, 'profile'):
             role = user.profile.role
@@ -56,3 +49,16 @@ class CustomLoginView(ObtainAuthToken):
             'user_id': user.pk,
             'role': role
         })
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    """
+    Standard Profile View (Stats Removed)
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_object(self):
+        # Automatically get profile for current user
+        profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile

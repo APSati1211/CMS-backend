@@ -1,7 +1,6 @@
 from django.db import models
-from django.utils.text import slugify # <-- NEW: For slug generation
+from django.utils.text import slugify
 
-# --- NEW CATEGORY MODEL ---
 class BlogCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=100, unique=True)
@@ -20,7 +19,6 @@ class BlogCategory(models.Model):
 
 
 class BlogPost(models.Model):
-    # --- ADD FOREIGN KEY TO CATEGORY ---
     category = models.ForeignKey(
         BlogCategory, 
         on_delete=models.SET_NULL, 
@@ -30,7 +28,8 @@ class BlogPost(models.Model):
     )
     
     title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True, max_length=255)
+    # Changed to blank=True so forms don't require it (it gets auto-filled)
+    slug = models.SlugField(unique=True, max_length=255, blank=True) 
     short_description = models.CharField(max_length=512, blank=True)
     body = models.TextField()
     image = models.ImageField(upload_to="blogs/", blank=True, null=True)
@@ -39,3 +38,16 @@ class BlogPost(models.Model):
 
     def __str__(self):
         return self.title
+
+    # --- FIX: Auto-Generate Slug on Save ---
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            # Ensure uniqueness
+            while BlogPost.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)

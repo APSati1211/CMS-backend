@@ -7,17 +7,16 @@ from rest_framework.routers import DefaultRouter
 # --- IMPORTS ---
 from cms.views import (
     SiteContentViewSet, 
-    home_page_content, 
+    # home_page_content, # Removed if unused
     CaseStudyViewSet, 
     ResourceViewSet, 
     ServiceViewSet, 
+    ServiceSubServiceViewSet,
     PageViewSet
 )
 from blog.views import BlogPostViewSet, BlogCategoryViewSet
-from leads.views import LeadViewSet, NewsletterSubscriberViewSet, chat_flow_handler
-from contact.views import ContactViewSet
+from leads.views import LeadViewSet, NewsletterSubscriberViewSet, EmailTemplateViewSet, chat_flow_handler
 from careers.views import JobOpeningViewSet, JobApplicationViewSet
-# from stakeholders.views import StakeholderViewSet  <-- Iski ab zarurat nahi yahan
 
 # --- ROUTER REGISTRATION ---
 router = DefaultRouter()
@@ -27,49 +26,52 @@ router.register(r'sitecontent', SiteContentViewSet)
 router.register(r'case-studies', CaseStudyViewSet)
 router.register(r'resources', ResourceViewSet)
 router.register(r'services', ServiceViewSet)
+router.register(r'sub-services', ServiceSubServiceViewSet)
 router.register(r'pages', PageViewSet)
 
 # Blog Endpoints
 router.register(r'blogs', BlogPostViewSet, basename='blog')
 router.register(r'blog-categories', BlogCategoryViewSet, basename='blog-category')
 
-# Lead & Contact Endpoints
+# Lead Endpoints
 router.register(r'leads', LeadViewSet, basename='lead')
 router.register(r'subscribers', NewsletterSubscriberViewSet)
-router.register(r'contact', ContactViewSet, basename='contact')
+router.register(r'email-templates', EmailTemplateViewSet)
 
-# Career Endpoints
+# Career Endpoints 
+# (Kept here to ensure /api/jobs/ works. If careers/urls.py also registers this, you can remove these lines)
 router.register(r'jobs', JobOpeningViewSet)
 router.register(r'apply', JobApplicationViewSet)
-
-# Stakeholders Endpoint
-# router.register(r'stakeholders', StakeholderViewSet) <-- YE LINE HATA DI KYUNKI AB YE 'stakeholders.urls' MEIN HAI
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     
-    # Router URLs (CRUD APIs)
+    # --- AUTH & CORE ---
+    path("", include("core.urls")), 
+
+    # --- MAIN ROUTER (CMS, Blog, Leads, Careers) ---
     path("api/", include(router.urls)),
     
-    # Custom Handlers
+    # --- CUSTOM HANDLERS ---
     path("api/chatbot-flow/", chat_flow_handler),
-    path("api/home-page-content/", home_page_content),
     
-    # Theme URLs
+    # --- THEME & BRANDING ---
     path("api/", include("theme.urls")),
+    path("api/branding/", include("branding.urls")),
     
-    # --- CUSTOM PAGES URLs ---
+    # --- CUSTOM PAGES (Namespaced) ---
     path("api/", include("homepage.urls")),       
-    path("api/about-page-data/", include("about.urls")), 
+    path("api/about/", include("about.urls")), 
     path("api/", include("resources_page.urls")), 
     path("api/", include("lead_system_page.urls")), 
     path("api/legal/", include("legal.urls")),    
-    path("api/", include("services_page.urls")),  
-    path('api/', include('careers.urls')),
-    path("api/", include("contact.urls")),
+    path("api/", include("services_page.urls")),
+    path("api/", include("careers.urls")),        # Ensure careers page data is loaded
+    path("api/", include("stakeholders.urls")),   # Added Stakeholders
     
-    # --- NEW: Solutions Page Logic included here ---
-    path("api/", include("stakeholders.urls")), # <--- Ye line add karni zaroori thi
+    # --- CONTACT APP (Dedicated Namespace) ---
+    # This enables: api/contact/, api/contact/messages/, api/contact/tickets/
+    path("api/contact/", include("contact.urls")),
 ]
 
 if settings.DEBUG:

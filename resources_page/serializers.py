@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import ResourcesHero, SectionTitles, CaseStudy, DownloadableResource, UsefulLink
+from .models import (
+    ResourcesHero, SectionTitles, CaseStudy, 
+    DownloadableResource, UsefulLink
+)
 
 class ResourcesHeroSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,8 +1,20 @@
 from rest_framework import viewsets
-from .models import LegalPage
-from .serializers import LegalPageSerializer
+from .models import LegalPage, LegalPageSection
+from .serializers import LegalPageSerializer, LegalPageSectionSerializer
 
-class LegalPageViewSet(viewsets.ReadOnlyModelViewSet):
+class LegalPageViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for Legal Pages (Title, Description).
+    Lookup by Slug (e.g., /api/legal/pages/privacy-policy/)
+    """
     queryset = LegalPage.objects.all()
     serializer_class = LegalPageSerializer
-    lookup_field = 'slug' # URL mein ID ki jagah Slug use karenge (e.g. /api/legal/privacy-policy/)
+    lookup_field = 'slug'
+
+class LegalPageSectionViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for Legal Page Sections (Heading, Content).
+    """
+    queryset = LegalPageSection.objects.all().order_by('order')
+    serializer_class = LegalPageSectionSerializer
+    filterset_fields = ['legal_page'] # Allows filtering sections by page ID

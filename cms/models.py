@@ -3,7 +3,13 @@ from django.db import models
 from django.utils.text import slugify
 from django.core.validators import FileExtensionValidator 
 
-from .sections import get_section_slugs, get_help_text
+# Ensure cms/sections.py exists or remove this import if not using dynamic sections
+try:
+    from .sections import get_section_slugs, get_help_text
+except ImportError:
+    # Fallback if sections.py is missing
+    def get_section_slugs(page): return []
+    def get_help_text(page, section): return ""
 
 class SiteContent(models.Model):
     PAGE_CHOICES = [
@@ -110,8 +116,11 @@ class Service(models.Model):
     slug = models.SlugField(unique=True, help_text="URL friendly name, e.g. virtual-cfo")
     short_description = models.TextField(help_text="Shown on the main Services page card")
     full_description = models.TextField(blank=True, null=True, help_text="Optional intro text shown on the detail page before the list.")
-    icon = models.CharField(max_length=50, default="Briefcase", help_text="Icon name (e.g. Briefcase, BarChart)")
+    
+    # Updated Image Field
     image = models.ImageField(upload_to="services/", blank=True, null=True)
+    
+    icon = models.CharField(max_length=50, default="Briefcase", help_text="Icon name (e.g. Briefcase, BarChart)")
     order = models.PositiveIntegerField(default=0)
 
     class Meta:

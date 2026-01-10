@@ -24,7 +24,7 @@ USER_ROLES = (
 )
 
 class UserProfile(models.Model):
-    # FIX: primary_key=True wapis add kiya hai taaki migration error na aaye
+    # FIX: primary_key=True keeps the user ID as profile ID
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=True)
     
     # Role Selection
@@ -33,12 +33,22 @@ class UserProfile(models.Model):
     # Common Fields
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
-    # Note: Hum 'image' field hata nahi rahe, balki rename/reuse kar rahe hain taaki conflict kam ho
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     
     # Verification Status
     is_verified = models.BooleanField(default=False)
+
+    # --- NEW FIELDS (Bio, Job, Social) ---
+    job_title = models.CharField(max_length=100, blank=True, help_text="e.g. Senior Auditor")
+    bio = models.TextField(blank=True, help_text="Short 'About Me' section")
+    linkedin_url = models.URLField(blank=True, help_text="LinkedIn Profile URL")
+    twitter_url = models.URLField(blank=True, help_text="Twitter/X Profile URL")
+    website_url = models.URLField(blank=True, help_text="Personal Portfolio or Company Website")
     
+    # --- ADMIN SETTINGS ---
+    # Field to set where lead notifications should be sent
+    leads_notification_email = models.EmailField(blank=True, null=True, help_text="Email to receive lead notifications")
+
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"
 

@@ -1,80 +1,64 @@
+import csv
+from django.http import HttpResponse
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Lead, ChatbotLead, WebsiteLead, NewsletterSubscriber
+from .models import Lead, ChatbotLead, WebsiteLead, NewsletterSubscriber, LeadShareHistory
 
-# --- 1. CHATBOT LEAD ADMIN (Customized) ---
+# --- CSV Export Action ---
+def export_to_csv(modeladmin, request, queryset):
+    meta = modeladmin.model._meta
+    field_names = [field.name for field in meta.fields]
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename={meta}.csv'
+    writer = csv.writer(response)
+
+    writer.writerow(field_names)
+    for obj in queryset:
+        row = writer.writerow([getattr(obj, field) for field in field_names])
+
+    return response
+
+export_to_csv.short_description = "Export Selected to CSV"
+
+# --- CHATBOT LEAD ---
 @admin.register(ChatbotLead)
 class ChatbotLeadAdmin(admin.ModelAdmin):
-    list_display = (
-        "name", 
-        "email", 
-        "phone", 
-        "display_service",   # Interested Service
-        "display_message",   # Message
-        "display_date"       # Received On
-    )
-    
-    search_fields = ("name", "email", "phone", "service", "sub_services")
+    list_display = ("name", "email", "phone", "display_service", "display_date")
+    search_fields = ("name", "email", "phone")
     list_filter = ("service", "created_at")
-    ordering = ("-created_at",)
-    
-    # Read-only fields for detail view
-    readonly_fields = ("created_at", "source", "message", "sub_services", "timeline")
+    actions = [export_to_csv]
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).filter(source='chatbot')
-
-    @admin.display(description='Interested Service')
+    @admin.display(description='Service')
     def display_service(self, obj):
-        if not obj.service:
-            return "-"
-        return format_html(
-            '<span style="color: #1565c0; font-weight: bold;">{}</span>',
-            obj.service
-        )
+        return format_html('<b style="color:#1565c0">{}</b>', obj.service or "-")
 
-    @admin.display(description='Message')
-    def display_message(self, obj):
-        if obj.message and len(obj.message) > 50:
-            return obj.message[:50] + "..."
-        return obj.message
-
-    @admin.display(description='Received On')
+    @admin.display(description='Date')
     def display_date(self, obj):
         return obj.created_at.strftime("%d %b %Y, %H:%M")
 
-
-# --- 2. WEBSITE LEAD ADMIN ---
+# --- WEBSITE LEAD ---
 @admin.register(WebsiteLead)
 class WebsiteLeadAdmin(admin.ModelAdmin):
-    # Added 'timeline' to list display
-    list_display = ("name", "company", "email", "service", "timeline", "created_at") 
-    
-    # Added 'timeline' to filters
-    list_filter = ("service", "timeline", "created_at")
-    
-    # Added 'sub_services' to search
-    search_fields = ("name", "email", "company", "sub_services")
-    
-    readonly_fields = ("created_at", "source", "sub_services", "timeline")
-    ordering = ("-created_at",)
+    list_display = ("name", "email", "company", "service", "created_at")
+    search_fields = ("name", "email", "company")
+    actions = [export_to_csv]
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).filter(source='website')
-
-
-# --- 3. ALL LEADS (Main Model) ---
+# --- ALL LEADS ---
 @admin.register(Lead)
 class LeadAdmin(admin.ModelAdmin):
     list_display = ("name", "email", "source", "service", "created_at")
     list_filter = ("source", "created_at")
-    search_fields = ("name", "email", "sub_services")
-    ordering = ("-created_at",)
+    actions = [export_to_csv]
 
-
-# --- 4. NEWSLETTER SUBSCRIBERS ---
+# --- NEWSLETTER ---
 @admin.register(NewsletterSubscriber)
 class NewsletterSubscriberAdmin(admin.ModelAdmin):
     list_display = ('email', 'subscribed_at')
-    search_fields = ('email',)
-    ordering = ('-subscribed_at',)
+    actions = [export_to_csv]
+
+# --- SHARE HISTORY (New) ---
+@admin.register(LeadShareHistory)
+class LeadShareHistoryAdmin(admin.ModelAdmin):
+    list_display = ('lead', 'recipient_name', 'recipient_phone', 'shared_by', 'shared_at')
+    list_filter = ('shared_at', 'platform')
