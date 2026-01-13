@@ -15,6 +15,27 @@ class CareersPage(models.Model):
 
     openings_title = models.CharField(max_length=255, default="Current Openings")
 
+    # --- Form Configuration ---
+    form_name_label = models.CharField(max_length=100, default="Full Name")
+    form_email_label = models.CharField(max_length=100, default="Email")
+    
+    form_phone_label = models.CharField(max_length=100, default="Phone")
+    is_phone_required = models.BooleanField(default=False)
+    
+    form_linkedin_label = models.CharField(max_length=100, default="LinkedIn URL")
+    is_linkedin_required = models.BooleanField(default=False)
+    
+    form_resume_label = models.CharField(max_length=100, default="Resume (PDF)")
+    
+    form_cover_letter_label = models.CharField(max_length=100, default="Cover Letter")
+    is_cover_letter_required = models.BooleanField(default=False)
+
+    # --- Dynamic Field (e.g. Referral Source) ---
+    show_referral_field = models.BooleanField(default=True)
+    form_referral_label = models.CharField(max_length=100, default="How did you hear about us?")
+    is_referral_multiselect = models.BooleanField(default=False, help_text="If checked, allows multiple selections.")
+    referral_options = models.TextField(default="LinkedIn,Glassdoor,Referral,Twitter,Other", help_text="Comma-separated values")
+
     def __str__(self):
         return "Careers Page Setup"
 
@@ -72,17 +93,18 @@ class JobApplication(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     linkedin_url = models.URLField(blank=True)
     
-    # --- UPDATED FIELDS ---
     resume_link = models.URLField(blank=True, null=True, help_text="Optional Link to Resume (Google Drive/Dropbox)")
     resume_file = models.FileField(
         upload_to="resumes/",
-        null=True,   # <--- Add this
-        blank=True,  # <--- Add this
+        null=True,
+        blank=True,
         help_text="Upload Resume (PDF Only)",
         validators=[FileExtensionValidator(allowed_extensions=['pdf'])]
-    )#----------------------
+    )
 
     cover_letter = models.TextField(blank=True)
+    referral_source = models.TextField(blank=True, null=True, help_text="Captured from dynamic form field")
+    
     applied_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

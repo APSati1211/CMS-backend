@@ -7,7 +7,7 @@ class Lead(models.Model):
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=30, blank=True)
     
-    # --- Updated Service Fields ---
+    # --- Service Fields ---
     service = models.CharField(max_length=200, blank=True, help_text="Main Service Category")
     sub_services = models.TextField(blank=True, help_text="Comma-separated list of selected sub-services")
     timeline = models.CharField(max_length=100, blank=True, help_text="When is the service required?")
@@ -16,12 +16,13 @@ class Lead(models.Model):
     message = models.TextField(blank=True)
     source = models.CharField(max_length=100, blank=True, default="website")
     
-    # Status field (Optional but useful for filtering in Admin Panel)
+    # --- UPDATED STATUS CHOICES ---
     STATUS_CHOICES = [
         ('new', 'New'),
-        ('contacted', 'Contacted'),
-        ('converted', 'Converted'),
-        ('closed', 'Closed'),
+        ('forwarded', 'Forwarded'),
+        ('done', 'Done'),
+        ('canceled', 'Canceled'),
+        ('spam', 'Spam'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
     
@@ -65,15 +66,12 @@ class NewsletterSubscriber(models.Model):
     def __str__(self):
         return self.email
 
-# --- NEW: SHARE HISTORY MODEL ---
-# This tracks who the lead was shared with via WhatsApp/Email
-
+# --- SHARE HISTORY MODEL ---
 class LeadShareHistory(models.Model):
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='share_history')
     recipient_name = models.CharField(max_length=255, help_text="Name of the person receiving the lead")
     recipient_phone = models.CharField(max_length=20, help_text="WhatsApp Number of the recipient")
     
-    # Tracks which admin shared it (Optional)
     shared_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     
     shared_at = models.DateTimeField(auto_now_add=True)
@@ -87,7 +85,7 @@ class LeadShareHistory(models.Model):
     def __str__(self):
         return f"Shared with {self.recipient_name} on {self.shared_at.strftime('%d %b, %H:%M')}"
 
-# --- NEW: EMAIL TEMPLATE MODEL ---
+# --- EMAIL TEMPLATE MODEL ---
 class EmailTemplate(models.Model):
     name = models.CharField(max_length=100, help_text="Internal name for the template (e.g., 'Welcome Email')")
     subject = models.CharField(max_length=255)

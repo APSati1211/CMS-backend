@@ -18,6 +18,37 @@ class TicketAdmin(admin.ModelAdmin):
 
 @admin.register(ContactPage)
 class ContactPageAdmin(admin.ModelAdmin):
+    # Group fields for better Admin UX
+    fieldsets = (
+        ("Hero Section", {
+            "fields": ("hero_title", "hero_subtitle")
+        }),
+        ("Form Configuration", {
+            "fields": (
+                "form_title", 
+                "form_button_text", 
+                "is_sub_service_multiselect"
+            ),
+            "description": "Configure the form title, button text, and selection behavior."
+        }),
+        ("Form Labels", {
+            "fields": (
+                "form_name_label", 
+                "form_company_label", 
+                "form_email_label", 
+                "form_phone_label", 
+                "form_service_label", 
+                "form_timeline_label", 
+                "form_message_label"
+            ),
+            "classes": ("collapse",),
+            "description": "Change the display labels for the contact form fields."
+        }),
+        ("Map & Support", {
+            "fields": ("map_embed_url", "support_title", "support_text")
+        }),
+    )
+
     def has_add_permission(self, request):
         return ContactPage.objects.count() == 0
 

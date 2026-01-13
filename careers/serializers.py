@@ -22,8 +22,9 @@ class JobOpeningSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class JobApplicationSerializer(serializers.ModelSerializer):
-    # Ensure link is optional in serializer validation
+    # Ensure links are optional in serializer validation
     resume_link = serializers.URLField(required=False, allow_blank=True)
+    linkedin_url = serializers.URLField(required=False, allow_blank=True)
     
     class Meta:
         model = JobApplication
