@@ -11,12 +11,10 @@ class LSFeatureSerializer(serializers.ModelSerializer):
         model = LSFeature
         fields = '__all__'
 
-# --- NEW SERIALIZER ---
 class LSDashboardSerializer(serializers.ModelSerializer):
     class Meta:
         model = LSDashboard
         fields = '__all__'
-# ----------------------
 
 class LSBottomCTASerializer(serializers.ModelSerializer):
     class Meta:

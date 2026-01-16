@@ -1,7 +1,5 @@
 from django.db import models
 
-# ... (LSHero, LSFeature models same rahenge) ...
-
 class LSHero(models.Model):
     title = models.CharField(max_length=255, default="Lead Management System")
     subtitle = models.TextField(default="Track, Manage, and Convert leads with AI precision.")
@@ -27,7 +25,6 @@ class LSFeature(models.Model):
     def __str__(self):
         return self.title
 
-# --- NEW MODEL: DASHBOARD IMAGE ---
 class LSDashboard(models.Model):
     image = models.ImageField(upload_to="lead_system/", blank=True, null=True, help_text="Upload the Dashboard Preview Image here")
     placeholder_text = models.CharField(max_length=255, default="Dashboard Preview", help_text="Alt text for the image")
@@ -38,7 +35,6 @@ class LSDashboard(models.Model):
 
     def __str__(self):
         return "Dashboard Image Section"
-# ----------------------------------
 
 class LSBottomCTA(models.Model):
     title = models.CharField(max_length=255, default="Ready to Streamline?")
