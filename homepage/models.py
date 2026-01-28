@@ -7,30 +7,42 @@ class HomePageContent(models.Model):
     # --- 1. HERO SECTION ---
     hero_title = models.CharField(max_length=255, default="Next-Gen Financial Intelligence")
     hero_subtitle = models.TextField(default="Automate audits, tax compliance, and forecasting with AI precision.")
-    hero_image = models.ImageField(upload_to="homepage/", blank=True, null=True)
+    # Removed hero_image as per frontend update
     hero_cta_text = models.CharField(max_length=50, default="Start Free Trial")
+    hero_cta_link = models.CharField(max_length=200, default="/contact", blank=True)
+    hero_sec_btn_text = models.CharField(max_length=50, default="How It Works", blank=True)
 
-    # --- 2. TRUSTED CLIENTS HEADER ---
-    clients_title = models.CharField(max_length=255, default="Trusted by Industry Leaders", blank=True)
+    # --- 2. AI RECOMMENDATION SECTION (New) ---
+    ai_title = models.CharField(max_length=255, default="Not sure where to start?", blank=True)
+    ai_subtitle = models.CharField(max_length=255, default="Let our AI-powered selector guide you.", blank=True)
 
-    # --- 3. PROCESS SECTION HEADER ---
+    # --- 3. SECTION HEADERS ---
     process_title = models.CharField(max_length=255, default="How It Works", blank=True)
     process_subtitle = models.TextField(default="Seamless integration in 3 simple steps.", blank=True)
 
-    # --- 4. FEATURES HEADER ---
-    features_title = models.CharField(max_length=255, default="Why Choose XpertAI?", blank=True)
-
-    # --- 5. TESTIMONIALS HEADER ---
+    # Renamed from features_title to match frontend 'services_title'
+    services_title = models.CharField(max_length=255, default="Our Key Services", blank=True)
+    
+    clients_title = models.CharField(max_length=255, default="Trusted by Industry Leaders", blank=True)
     reviews_title = models.CharField(max_length=255, default="Client Success Stories", blank=True)
-
-    # --- 6. FAQ HEADER ---
+    stories_title = models.CharField(max_length=255, default="Success Stories", blank=True)
     faq_title = models.CharField(max_length=255, default="Frequently Asked Questions", blank=True)
 
-    # --- 7. BOTTOM CTA SECTION ---
+    # --- 4. BOTTOM CTA SECTION (Consolidated 3 Buttons) ---
     cta_title = models.CharField(max_length=255, default="Ready to Transform?")
     cta_text = models.TextField(default="Join 500+ companies streamlining their finance today.")
-    cta_btn_text = models.CharField(max_length=50, default="Get Started")
-    cta_btn_link = models.CharField(max_length=100, default="/contact")
+    
+    # Button 1 (Left)
+    quick_link_1_text = models.CharField(max_length=50, default="Sign Up", blank=True)
+    quick_link_1_link = models.CharField(max_length=200, default="/contact", blank=True)
+    
+    # Button 2 (Center)
+    quick_link_2_text = models.CharField(max_length=50, default="Explore Services", blank=True)
+    quick_link_2_link = models.CharField(max_length=200, default="/services", blank=True)
+    
+    # Button 3 (Right)
+    quick_link_3_text = models.CharField(max_length=50, default="Join as Professional", blank=True)
+    quick_link_3_link = models.CharField(max_length=200, default="/careers", blank=True)
 
     def __str__(self):
         return "Home Page Main Content"
@@ -53,18 +65,6 @@ class TrustedClient(models.Model):
     def __str__(self):
         return self.name
 
-class Stat(models.Model):
-    value = models.CharField(max_length=50, help_text="e.g. 500+")
-    label = models.CharField(max_length=100, help_text="e.g. Clients Served")
-    icon = models.CharField(max_length=50, default="Users")
-    order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['order']
-    
-    def __str__(self):
-        return self.label
-
 class ProcessStep(models.Model):
     step_number = models.CharField(max_length=10, default="01")
     title = models.CharField(max_length=100)
@@ -77,18 +77,6 @@ class ProcessStep(models.Model):
 
     def __str__(self):
         return f"{self.step_number} - {self.title}"
-
-class Feature(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    icon_name = models.CharField(max_length=50, default="TrendingUp")
-    order = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering = ['order']
-
-    def __str__(self):
-        return self.title
 
 class Testimonial(models.Model):
     author_name = models.CharField(max_length=100)

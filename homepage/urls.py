@@ -4,9 +4,7 @@ from .views import (
     HomePageDataView, 
     HomePageContentViewSet, 
     TrustedClientViewSet, 
-    StatViewSet, 
     ProcessStepViewSet, 
-    FeatureViewSet, 
     TestimonialViewSet, 
     FAQViewSet
 )
@@ -17,11 +15,9 @@ router = DefaultRouter()
 # Note: These route names must match the 'resource' prop in your React HomeManager.jsx
 router.register(r'homepage-content', HomePageContentViewSet)
 router.register(r'clients', TrustedClientViewSet)
-router.register(r'stats', StatViewSet)
 router.register(r'process-steps', ProcessStepViewSet)
-router.register(r'features', FeatureViewSet)
 router.register(r'testimonials', TestimonialViewSet)
-router.register(r'faqs', FAQViewSet) # Frontend uses 'faqs'
+router.register(r'faqs', FAQViewSet) 
 
 urlpatterns = [
     # The big aggregated object for the frontend Home.jsx

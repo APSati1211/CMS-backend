@@ -113,11 +113,11 @@ class Resource(models.Model):
 
 class Service(models.Model):
     title = models.CharField(max_length=200, help_text="e.g. Virtual CFO")
-    slug = models.SlugField(unique=True, help_text="URL friendly name, e.g. virtual-cfo")
+    # UPDATED: Added blank=True to allow empty submission
+    slug = models.SlugField(unique=True, blank=True, help_text="URL friendly name, e.g. virtual-cfo")
     short_description = models.TextField(help_text="Shown on the main Services page card")
     full_description = models.TextField(blank=True, null=True, help_text="Optional intro text shown on the detail page before the list.")
     
-    # Updated Image Field
     image = models.ImageField(upload_to="services/", blank=True, null=True)
     
     icon = models.CharField(max_length=50, default="Briefcase", help_text="Icon name (e.g. Briefcase, BarChart)")
@@ -128,6 +128,12 @@ class Service(models.Model):
 
     def __str__(self):
         return self.title
+
+    # UPDATED: Added save method to auto-generate slug
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
 class ServiceSubService(models.Model):
     """

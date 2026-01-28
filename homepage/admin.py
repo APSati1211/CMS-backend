@@ -1,8 +1,8 @@
 from django.contrib import admin
 from adminsortable2.admin import SortableAdminMixin
 from .models import (
-    HomePageContent, TrustedClient, Stat, 
-    ProcessStep, Feature, Testimonial, FAQ
+    HomePageContent, TrustedClient, 
+    ProcessStep, Testimonial, FAQ
 )
 
 @admin.register(HomePageContent)
@@ -15,18 +15,9 @@ class HomePageContentAdmin(admin.ModelAdmin):
 class TrustedClientAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('name', 'order')
 
-@admin.register(Stat)
-class StatAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ('label', 'value', 'order')
-    list_editable = ('value', 'order')
-
 @admin.register(ProcessStep)
 class ProcessStepAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ('step_number', 'title', 'order')
-
-@admin.register(Feature)
-class FeatureAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ('title', 'icon_name', 'order')
 
 @admin.register(Testimonial)
 class TestimonialAdmin(SortableAdminMixin, admin.ModelAdmin):

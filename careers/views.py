@@ -110,7 +110,7 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = 'attachment; filename="resumes_bulk.zip"'
         return response
 
-    # --- ACTION: Share via Email ---
+    # --- ACTION: Share via Email (UPDATED) ---
     @action(detail=False, methods=['post'])
     def share_via_email(self, request):
         """
@@ -125,46 +125,61 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
 
         subject = "Shared Careers Data"
         body = "Please find the requested data attached."
-        attachment_name = "data"
-        attachment_content = None
-        content_type = None
+        
+        # Initialize email object
+        email = EmailMessage(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [target_email],
+        )
 
         try:
             if share_type == 'csv_all':
-                subject = "Bulk Applications Export (CSV)"
-                attachment_name = "applications_bulk.csv"
-                attachment_content = self._generate_csv(self.queryset)
-                content_type = 'text/csv'
+                email.subject = "Bulk Applications Export (CSV)"
+                csv_content = self._generate_csv(self.queryset)
+                email.attach("applications_bulk.csv", csv_content, 'text/csv')
 
             elif share_type == 'zip_resumes':
-                subject = "Bulk Resumes Export (ZIP)"
-                attachment_name = "resumes_bulk.zip"
-                attachment_content = self._generate_zip(self.queryset)
-                content_type = 'application/zip'
-                if not attachment_content:
+                email.subject = "Bulk Resumes Export (ZIP)"
+                zip_content = self._generate_zip(self.queryset)
+                if not zip_content:
                      return Response({"error": "No resumes available to zip."}, status=400)
+                email.attach("resumes_bulk.zip", zip_content, 'application/zip')
 
             elif share_type == 'csv_single' and obj_id:
                 obj = JobApplication.objects.get(id=obj_id)
-                subject = f"Application Details: {obj.applicant_name}"
-                attachment_name = f"application_{obj_id}.csv"
-                attachment_content = self._generate_csv([obj])
-                content_type = 'text/csv'
+                email.subject = f"Application: {obj.applicant_name} - {obj.job.title}"
+                email.body = f"""
+                Applicant: {obj.applicant_name}
+                Role: {obj.job.title}
+                Email: {obj.email}
+                Phone: {obj.phone}
+                LinkedIn: {obj.linkedin_url}
+                
+                Please find the Resume PDF attached.
+                """
+                
+                # NOTE: CSV Attachment removed as per request.
+                
+                # Attach Resume PDF (If exists)
+                if obj.resume_file:
+                    try:
+                        file_name = obj.resume_file.name.split('/')[-1] # Extract clean filename
+                        # Open and read file content
+                        with obj.resume_file.open('rb') as f:
+                            pdf_content = f.read()
+                        email.attach(file_name, pdf_content, 'application/pdf')
+                    except Exception as e:
+                        email.body += f"\n\n[Warning: Could not attach resume file. Error: {str(e)}]"
             
             else:
                 return Response({"error": "Invalid share type or missing ID"}, status=400)
 
             # Send Email
-            email = EmailMessage(
-                subject,
-                body,
-                settings.DEFAULT_FROM_EMAIL,
-                [target_email],
-            )
-            email.attach(attachment_name, attachment_content, content_type)
             email.send()
 
             return Response({"success": True, "message": f"Email sent to {target_email}"})
 
         except Exception as e:
-            return Response({"error": str(e)}, status=500)  
+            return Response({"error": str(e)}, status=500)
