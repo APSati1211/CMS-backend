@@ -1,3 +1,5 @@
+# contact/urls.py
+
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
@@ -11,20 +13,18 @@ from .views import (
 
 router = DefaultRouter()
 
-# Admin Endpoints (prefixed by api/contact/)
-router.register(r'contact-content', ContactPageViewSet)   # api/contact/contact-content/
-router.register(r'office-addresses', OfficeAddressViewSet) # api/contact/office-addresses/
-router.register(r'messages', ContactMessageViewSet)       # api/contact/messages/
-router.register(r'tickets', TicketViewSet)                # api/contact/tickets/
+# Admin Endpoints
+router.register(r'contact-content', ContactPageViewSet)
+router.register(r'office-addresses', OfficeAddressViewSet)
+router.register(r'messages', ContactMessageViewSet)
 
-# Public Form Endpoint (must be last to avoid overriding others if using regex)
-# This maps 'api/contact/' (POST) to the ContactViewSet
+# FIX: Add basename='ticket' because TicketViewSet uses get_queryset()
+router.register(r'tickets', TicketViewSet, basename='ticket') 
+
+# Public Endpoint
 router.register(r'', ContactViewSet, basename="public-contact")
 
 urlpatterns = [
-    # Public Page Data
     path('page-data/', ContactPageDataView.as_view(), name='contact-page-data'),
-    
-    # Router URLs
     path('', include(router.urls)),
 ]

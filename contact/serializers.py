@@ -10,7 +10,8 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = "__all__"
-        read_only_fields = ['status', 'created_at']
+        # FIX: Removed 'status' so it can be updated. Only 'created_at' is read-only.
+        read_only_fields = ['created_at']
 
 class OfficeAddressSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,4 +1,4 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import ContactMessage, ContactPage, OfficeAddress, Ticket
@@ -8,7 +8,7 @@ from .serializers import ContactSerializer, ContactPageSerializer, OfficeAddress
 class ContactPageDataView(APIView):
     def get(self, request):
         content, _ = ContactPage.objects.get_or_create(id=1)
-        addresses = OfficeAddress.objects.all()
+        addresses = OfficeAddress.objects.all().order_by('order')
         return Response({
             "content": ContactPageSerializer(content).data,
             "addresses": OfficeAddressSerializer(addresses, many=True).data,
@@ -43,5 +43,23 @@ class TicketViewSet(viewsets.ModelViewSet):
     """
     Admin Endpoint: GET/PUT/DELETE /api/contact/tickets/
     """
-    queryset = Ticket.objects.all().order_by('-created_at')
     serializer_class = TicketSerializer
+    # IMPORTANT: Default queryset required for Router introspection
+    queryset = Ticket.objects.all() 
+
+    def get_queryset(self):
+        """
+        Custom logic to show tickets.
+        """
+        user = self.request.user
+        
+        # 1. Admin/Staff -> See ALL tickets
+        if user.is_staff or user.is_superuser:
+            return Ticket.objects.all().order_by('-created_at')
+            
+        # 2. Authenticated User -> See OWN tickets (matching email)
+        if user.is_authenticated:
+            return Ticket.objects.filter(email=user.email).order_by('-created_at')
+            
+        # 3. Fallback (e.g. for development if auth headers missing) -> Show All
+        return Ticket.objects.all().order_by('-created_at')
