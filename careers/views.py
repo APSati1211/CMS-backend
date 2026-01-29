@@ -1,7 +1,7 @@
 import csv
 import zipfile
 import io
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse # <--- Import FileResponse
 from django.core.mail import EmailMessage
 from django.conf import settings
 from rest_framework import viewsets, status
@@ -100,6 +100,28 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="application_{pk}_details.csv"'
         return response
 
+    # --- ACTION: Download Single Resume (New) ---
+    @action(detail=True, methods=['get'])
+    def download_resume(self, request, pk=None):
+        """
+        Forces the browser to download the resume file.
+        """
+        application = self.get_object()
+        if not application.resume_file:
+            return Response({'error': 'No resume file attached.'}, status=404)
+        
+        try:
+            # Open file in binary read mode
+            file_handle = application.resume_file.open('rb')
+            response = FileResponse(file_handle, content_type='application/pdf')
+            
+            # Clean filename for download
+            filename = f"{application.applicant_name.replace(' ', '_')}_Resume.pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            return response
+        except FileNotFoundError:
+            return Response({'error': 'File not found on server.'}, status=404)
+
     # --- ACTION: Download Bulk Resumes (ZIP) ---
     @action(detail=False, methods=['get'])
     def download_resumes(self, request):
@@ -110,12 +132,9 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = 'attachment; filename="resumes_bulk.zip"'
         return response
 
-    # --- ACTION: Share via Email (UPDATED) ---
+    # --- ACTION: Share via Email ---
     @action(detail=False, methods=['post'])
     def share_via_email(self, request):
-        """
-        Expects: { "email": "target@example.com", "type": "csv_all" | "zip_resumes" | "csv_single", "id": optional_id }
-        """
         target_email = request.data.get('email')
         share_type = request.data.get('type')
         obj_id = request.data.get('id')
@@ -126,13 +145,7 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
         subject = "Shared Careers Data"
         body = "Please find the requested data attached."
         
-        # Initialize email object
-        email = EmailMessage(
-            subject,
-            body,
-            settings.DEFAULT_FROM_EMAIL,
-            [target_email],
-        )
+        email = EmailMessage(subject, body, settings.DEFAULT_FROM_EMAIL, [target_email])
 
         try:
             if share_type == 'csv_all':
@@ -150,35 +163,20 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
             elif share_type == 'csv_single' and obj_id:
                 obj = JobApplication.objects.get(id=obj_id)
                 email.subject = f"Application: {obj.applicant_name} - {obj.job.title}"
-                email.body = f"""
-                Applicant: {obj.applicant_name}
-                Role: {obj.job.title}
-                Email: {obj.email}
-                Phone: {obj.phone}
-                LinkedIn: {obj.linkedin_url}
+                email.body = f"Application details for {obj.applicant_name} attached."
                 
-                Please find the Resume PDF attached.
-                """
-                
-                # NOTE: CSV Attachment removed as per request.
-                
-                # Attach Resume PDF (If exists)
                 if obj.resume_file:
                     try:
-                        file_name = obj.resume_file.name.split('/')[-1] # Extract clean filename
-                        # Open and read file content
+                        file_name = obj.resume_file.name.split('/')[-1]
                         with obj.resume_file.open('rb') as f:
                             pdf_content = f.read()
                         email.attach(file_name, pdf_content, 'application/pdf')
                     except Exception as e:
                         email.body += f"\n\n[Warning: Could not attach resume file. Error: {str(e)}]"
-            
             else:
-                return Response({"error": "Invalid share type or missing ID"}, status=400)
+                return Response({"error": "Invalid request"}, status=400)
 
-            # Send Email
             email.send()
-
             return Response({"success": True, "message": f"Email sent to {target_email}"})
 
         except Exception as e:
